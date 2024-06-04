@@ -89,7 +89,7 @@ async def start_command(client: Client, message: Message):
             [
                 [
                     InlineKeyboardButton("⚡️ ᴀʙᴏᴜᴛ", callback_data = "about"),
-                    InlineKeyboardButton('🍁 sᴇʀɪᴇsғʟɪx', url='https://t.me/Team_Netflix/40')
+                    InlineKeyboardButton('🍁 sᴇʀɪᴇsғʟɪx', url='https://t.me/NetflixBackupM')
                 ]
             ]
         )
@@ -122,19 +122,19 @@ REPLY_ERROR = """<code>Use this command as a replay to any telegram message with
 async def not_joined(client: Client, message: Message):
     buttons = [
         [
-            InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink),
-            InlineKeyboardButton(text="ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ •", url=client.invitelink2),
+            InlineKeyboardButton(text="🌸 ᴊᴏɪɴ 1", url=client.invitelink),
+            InlineKeyboardButton(text="✨ ᴊᴏɪɴ 2", url=client.invitelink2),
         ],
         [
-            InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink3),
-            InlineKeyboardButton(text="ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ •", url=client.invitelink4),
+            InlineKeyboardButton(text="🖤 ᴊᴏɪɴ 3", url=client.invitelink3),
+            InlineKeyboardButton(text="🌹 ᴊᴏɪɴ 4", url=client.invitelink4),
         ]
     ]
     try:
         buttons.append(
             [
                 InlineKeyboardButton(
-                    text = '• ɴᴏᴡ ᴄʟɪᴄᴋ ʜᴇʀᴇ •',
+                    text = 'ᴄʟɪᴄᴋ ʜᴇʀᴇ',
                     url = f"https://t.me/{client.username}?start={message.command[1]}"
                 )
             ]

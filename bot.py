@@ -5,11 +5,14 @@ from plugins import web_server
 
 import pyromod.listen
 from pyrogram import Client
+import pyrogram.utils
 from pyrogram.enums import ParseMode
 import sys
 from datetime import datetime
 
 from config import API_HASH, APP_ID, LOGGER, TG_BOT_TOKEN, TG_BOT_WORKERS, FORCESUB_CHANNEL, FORCESUB_CHANNEL2, FORCESUB_CHANNEL3, CHANNEL_ID, PORT
+
+pyrogram.utils.MIN_CHANNEL_ID = -1009147483647
 
 class Bot(Client):
     def __init__(self):
@@ -77,6 +80,7 @@ class Bot(Client):
         except Exception as e:
             self.LOGGER(__name__).warning(e)
             self.LOGGER(__name__).warning(f"Make Sure bot is Admin in DB Channel, and Double check the CHANNEL_ID Value, Current Value {CHANNEL_ID}")
+            
             self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/weebs_support for support")
             sys.exit()
 

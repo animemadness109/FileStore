@@ -88,7 +88,7 @@ async def start_command(client: Client, message: Message):
             except:
                 pass
 
-        k = await message.reply_text("<b>❗️ <u>baka!</u> ❗️</b>\n\n<b>This video / file will be deleted in 10 minutes (Due to copyright issues).\n\n📌 Please forward this video / file to somewhere else and start downloading there.</b>")
+        k = await message.reply_text("<b>❗️ <u>baka!</u> ❗️</b>\n\n<b>This video / file will be deleted in 2 minutes (Due to copyright issues).\n\n📌 Please forward this video / file to somewhere else and start downloading there.@Cultured_Madness</b>")
         await asyncio.sleep(SECONDS)
 
         for data in Codeflix:
@@ -103,8 +103,8 @@ async def start_command(client: Client, message: Message):
         reply_markup = InlineKeyboardMarkup(
             [
                 [
-                    InlineKeyboardButton('⚡️ ᴍᴏᴠɪᴇs', url='https://t.me/+QVewP06XCPFiYWZl'),
-                    InlineKeyboardButton('🍁 sᴇʀɪᴇs', url='https://t.me/webseries_flix')
+                    InlineKeyboardButton('⚡️ Cultured', url='https://t.me/Cultured_Madness'),
+                    InlineKeyboardButton('🍁 Anime', url='https://t.me/Anime_Madness')
                 ]
             ]
         )

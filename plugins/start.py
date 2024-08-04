@@ -1,22 +1,19 @@
-#(©)Codeflix_Bots
-
-
-
-
 import os
 import asyncio
 from pyrogram import Client, filters, __version__
 from pyrogram.enums import ParseMode
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 
 from bot import Bot
-from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT
-from helper_func import subscribed, encode, decode, get_messages
-from database.database import add_user, del_user, full_userbase, present_user
+from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT, START_PIC, \
+    FORCE_PIC, AUTO_DEL, DEL_TIMER, DEL_MSG
+from helper_func import encode, decode, get_messages, subscribed
+from database.database import add_user, del_user, full_userbase, present_user, is_requested_one, delete_all_one
+from plugins.timezone import convert_time
 
 
-
+# =====================================================================================##
 
 @Bot.on_message(filters.command('start') & filters.private & subscribed)
 async def start_command(client: Client, message: Message):
@@ -27,7 +24,7 @@ async def start_command(client: Client, message: Message):
         except:
             pass
     text = message.text
-    if len(text)>7:
+    if len(text) > 7:
         try:
             base64_string = text.split(" ", 1)[1]
         except:
@@ -41,7 +38,7 @@ async def start_command(client: Client, message: Message):
             except:
                 return
             if start <= end:
-                ids = range(start,end+1)
+                ids = range(start, end+1)
             else:
                 ids = []
                 i = start
@@ -55,7 +52,7 @@ async def start_command(client: Client, message: Message):
                 ids = [int(int(argument[1]) / abs(client.db_channel.id))]
             except:
                 return
-        temp_msg = await message.reply("ᴡᴀɪᴛ ʙʀᴏᴏ...")
+        temp_msg = await message.reply("Please wait...")
         try:
             messages = await get_messages(client, ids)
         except:
@@ -64,9 +61,8 @@ async def start_command(client: Client, message: Message):
         await temp_msg.delete()
 
         for msg in messages:
-
             if bool(CUSTOM_CAPTION) & bool(msg.document):
-                caption = CUSTOM_CAPTION.format(previouscaption = "" if not msg.caption else msg.caption.html, filename = msg.document.file_name)
+                caption = CUSTOM_CAPTION.format(previouscaption="" if not msg.caption else msg.caption.html, filename=msg.document.file_name)
             else:
                 caption = "" if not msg.caption else msg.caption.html
 
@@ -76,90 +72,82 @@ async def start_command(client: Client, message: Message):
                 reply_markup = None
 
             try:
-                await msg.copy(chat_id=message.from_user.id, caption = caption, parse_mode = ParseMode.HTML, reply_markup = reply_markup, protect_content=PROTECT_CONTENT)
+                copied_msg = await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML, reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
                 await asyncio.sleep(0.5)
+                asyncio.create_task(delete_message(copied_msg, DEL_TIMER))
+                asyncio.create_task(auto_del_notification(client, copied_msg, DEL_TIMER))
             except FloodWait as e:
                 await asyncio.sleep(e.x)
-                await msg.copy(chat_id=message.from_user.id, caption = caption, parse_mode = ParseMode.HTML, reply_markup = reply_markup, protect_content=PROTECT_CONTENT)
+                await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML, reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
             except:
                 pass
         return
     else:
-        reply_markup = InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton("⚡️ ᴀʙᴏᴜᴛ", callback_data = "about"),
-                    InlineKeyboardButton('🍁 Anime Channel', url='https://t.me/Anime_Madness')
-                ]
-            ]
-        )
-        await message.reply_text(
-            text = START_MSG.format(
-                first = message.from_user.first_name,
-                last = message.from_user.last_name,
-                username = None if not message.from_user.username else '@' + message.from_user.username,
-                mention = message.from_user.mention,
-                id = message.from_user.id
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("Help", callback_data='help'),
+             InlineKeyboardButton("About", callback_data='about')],
+            [InlineKeyboardButton('Main Channel', url='https://t.me/Anime_Madness'),
+             InlineKeyboardButton('Ongoing Channel', url='https://t.me/Ongoing_Madness')],
+            [InlineKeyboardButton("Close", callback_data='close')]
+        ])
+        await message.reply_photo(
+            photo=START_PIC,
+            caption=START_MSG.format(
+                first=message.from_user.first_name,
+                last=message.from_user.last_name,
+                username=None if not message.from_user.username else '@' + message.from_user.username,
+                mention=message.from_user.mention,
+                id=message.from_user.id
             ),
-            reply_markup = reply_markup,
-            disable_web_page_preview = True,
-            quote = True
+            reply_markup=reply_markup,
         )
         return
 
-    
-#=====================================================================================##
+# =====================================================================================##
 
-WAIT_MSG = """"<b>Processing ...</b>"""
+WAIT_MSG = """<b>Processing ...</b>"""
 
-REPLY_ERROR = """<code>Use this command as a replay to any telegram message with out any spaces.</code>"""
+REPLY_ERROR = """<code>Use this command as a replay to any telegram message without any spaces.</code>"""
 
-#=====================================================================================##
 
-    
-    
+# =====================================================================================##
+
 @Bot.on_message(filters.command('start') & filters.private)
 async def not_joined(client: Client, message: Message):
-    buttons = [
-        [
-            InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink),
-            InlineKeyboardButton(text="ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ •", url=client.invitelink2),
-        ],
-        [
-            InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink3),
-            InlineKeyboardButton(text="ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ •", url=client.invitelink4),
-        ]
+    btn = [[
+        InlineKeyboardButton(
+            "Join Channel 1", url=client.link_one),
+        InlineKeyboardButton(
+            " Join Channel 2 ", url=client.invitelink2), ]
     ]
     try:
-        buttons.append(
-            [
-                InlineKeyboardButton(
-                    text = '• ɴᴏᴡ ᴄʟɪᴄᴋ ʜᴇʀᴇ •',
-                    url = f"https://t.me/{client.username}?start={message.command[1]}"
-                )
-            ]
-        )
-    except IndexError:
+        btn.append([
+            InlineKeyboardButton(
+                text='Try Again',
+                url=f"https://t.me/{client.username}?start={message.command[1]}"
+            )
+        ])
+    except (IndexError, ValueError):
         pass
-
-    await message.reply(
-        text = FORCE_MSG.format(
-                first = message.from_user.first_name,
-                last = message.from_user.last_name,
-                username = None if not message.from_user.username else '@' + message.from_user.username,
-                mention = message.from_user.mention,
-                id = message.from_user.id
-            ),
-        reply_markup = InlineKeyboardMarkup(buttons),
-        quote = True,
-        disable_web_page_preview = True
+    await message.reply_photo(
+        photo=FORCE_PIC,
+        caption=FORCE_MSG.format(
+            first=message.from_user.first_name,
+            last=message.from_user.last_name,
+            username=None if not message.from_user.username else '@' + message.from_user.username,
+            mention=message.from_user.mention,
+            id=message.from_user.id),
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=btn)
     )
+    return
+
 
 @Bot.on_message(filters.command('users') & filters.private & filters.user(ADMINS))
 async def get_users(client: Bot, message: Message):
     msg = await client.send_message(chat_id=message.chat.id, text=WAIT_MSG)
     users = await full_userbase()
     await msg.edit(f"{len(users)} users are using this bot")
+
 
 @Bot.on_message(filters.private & filters.command('broadcast') & filters.user(ADMINS))
 async def send_text(client: Bot, message: Message):
@@ -171,7 +159,7 @@ async def send_text(client: Bot, message: Message):
         blocked = 0
         deleted = 0
         unsuccessful = 0
-        
+
         pls_wait = await message.reply("<i>Broadcasting Message.. This will Take Some Time</i>")
         for chat_id in query:
             try:
@@ -191,7 +179,7 @@ async def send_text(client: Bot, message: Message):
                 unsuccessful += 1
                 pass
             total += 1
-        
+
         status = f"""<b><u>Broadcast Completed</u>
 
 Total Users: <code>{total}</code>
@@ -199,10 +187,34 @@ Successful: <code>{successful}</code>
 Blocked Users: <code>{blocked}</code>
 Deleted Accounts: <code>{deleted}</code>
 Unsuccessful: <code>{unsuccessful}</code></b>"""
-        
-        return await pls_wait.edit(status)
 
+        return await pls_wait.edit(status)
     else:
         msg = await message.reply(REPLY_ERROR)
         await asyncio.sleep(8)
         await msg.delete()
+
+
+@Bot.on_message(filters.command('purge_one') & filters.private & filters.user(ADMINS))
+async def purge_req_one(bot, message):
+    r = await message.reply("processing...")
+    await delete_all_one()
+    await r.edit("**Req db Cleared**")
+
+
+# =====================================================================================##
+
+# Function to delete message after delay
+async def delete_message(msg, delay_time):
+    if AUTO_DEL.lower() == "true":
+        await asyncio.sleep(delay_time)
+        await msg.delete()
+
+# Function to notify and delete message after delay
+async def auto_del_notification(client, msg, delay_time):
+    if AUTO_DEL.lower() == "true":
+        await msg.reply_text(DEL_MSG.format(time=convert_time(DEL_TIMER)))
+        await asyncio.sleep(delay_time)
+        await msg.delete()
+
+# =====================================================================================##

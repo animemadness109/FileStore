@@ -10,13 +10,13 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
     if data == "about":
         await query.message.edit_text(
-            text = f"<b>○ ᴏᴡɴᴇʀ : <a href='tg://user?id={OWNER_ID}'>Ŧrαf‌αl‌g‌αrŁαw</a>\n○ Ongoing Anime : <a href='https://t.me/Ongoing_Madness'>Ongoing Madness</a>\n○ Anime Channel: <a href='https://t.me/Anime_Madness'>Anime Madness</a>\n○ Movies Channel: <a href='https://t.me/Madness_Movie'>Movie Madness</a>\n○ ᴀɴɪᴍᴇ ᴄʜᴀᴛ : <a href='https://t.me/Weebs_Madness'>ᴡᴇᴇʙ ᴢᴏɴᴇ</a></b>",
+            text = f"<b>○ ᴏᴡɴᴇʀ : <a href='tg://user?id={OWNER_ID}'>Jҽϝϝɾҽყ Wɛɛӄɛռɖֆ</a>\n○ Ongoing Anime : <a href='https://t.me/Ongoing_Weekends'>Ongoing Madness</a>\n○ Anime Channel: <a href='https://t.me/Anime_Madness'>Anime Madness</a>\n○ Movies Channel: <a href='https://t.me/Movie_Weekends'>Movie Weekends</a>\n○ ᴀɴɪᴍᴇ ᴄʜᴀᴛ : <a href='https://t.me/Weebs_Weekends'>ᴡᴇᴇʙ ᴢᴏɴᴇ</a></b>",
             disable_web_page_preview = True,
             reply_markup = InlineKeyboardMarkup(
                 [
                     [
                     InlineKeyboardButton("⚡️ ᴄʟᴏsᴇ", callback_data = "close"),
-                    InlineKeyboardButton('🍁 Anime Channel', url='https://t.me/Anime_Madness')
+                    InlineKeyboardButton('🍁 Anime Channel', url='https://t.me/Anime_Weekends')
                     ]
                 ]
             )
